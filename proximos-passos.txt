@@ -1,0 +1,24 @@
+Fazer:
+Usar o Plotly para plotar o Mapa
+Colocar nos avisos a fonte da classificação do porte das cidades
+Colocar nos avisos a fonte dos dados de população
+Revisar os Avisos
+ 
+Dúvidas:
+Não encontrei estimativa da população para 2023
+Ajustar dia e mês (ou apenas dias, nos casos de Dados Mensais) no hover do gráfico de linhas. Explicar nos Avisos
+Ajustar valores dos eixos (A solução encontrada não foi 100% satisfatória. Ver Turvolandia, categoria Estupro)
+Alterar as cores
+Fazer o tratamento dos dados num arquivo separado
+Nome das cidades em caixa alta e sem acento
+Colocar a linha da cidade selecionada em negrito nos rankings
+Colocar a opção de selecionar TODAS cidades no campo das cidades
+
+
+Pesquisas:
+Relação do tamanho da população com os registros por mil hab.
+Explicação para a queda dos registros em 2017 (Política; Mudança nos registros)
+Em quais cidades houve uma queda em 2017 (Tamanho da população; Atuação do crime organizado)
+Região do estado de concetração de crimes de estupro
+
+

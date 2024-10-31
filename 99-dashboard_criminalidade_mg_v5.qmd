@@ -1,0 +1,1138 @@
+---
+title: Crimes violentos em Minas Gerais
+format: 
+  dashboard:
+    scrolling: false
+    orientation: rows
+server: shiny
+---
+
+```{=html}
+<style>
+    .navbar, .quarto-dashboard #quarto-dashboard-header .navbar .navbar-nav .active {
+        background-color: #274862
+    }
+    .quarto-dashboard #quarto-dashboard-header .navbar .navbar-nav .active {
+        border-bottom: 3px solid #fdfefe;
+    }
+    .bslib-value-box .value-box-title {
+        font-size: 0.8rem;
+    }
+    .card-header, .quarto-dashboard aside.sidebar {
+        background-color: #203C52;
+        color: #fdfefe;
+    }
+    .bslib-sidebar-layout>.main {
+        background-color: #172C3C;
+    }
+    .card-header-tabs .nav-link.active {
+        background-color: #274862;
+        border-bottom-color: #274862;
+    }
+    .nav-tabs .nav-link.active, .nav-tabs .nav-item.show .nav-link, .nav-link, .nav-link:hover, .nav-link:focus {
+        color: #fdfefe;
+    }
+    .bslib-sidebar-layout>.collapse-toggle, .bslib-sidebar-layout.sidebar-collapsed>.collapse-toggle {
+        color: #fdfefe;
+    }
+    #popCidade {
+        background-color: #335A7A;
+        border-radius: 3px;
+        padding: 4px 9px;
+        font-size: small;
+    }
+    .irs--shiny .irs-from, .irs--shiny .irs-to, .irs--shiny .irs-single {
+        background-color: #335A7A;
+        padding: 1px 2px;
+        font-size: 10px;
+    }
+    .irs--shiny .irs-grid-pol.small {
+        background-color: #000;
+    }
+    .irs--shiny.irs-with-grid {
+        margin-left: 2px;
+    }
+    .irs--shiny .irs-bar {
+        border-top: 1px solid #335A7A;
+        border-bottom: 1px solid #335A7A;
+        background: #335A7A;
+    }
+    .bslib-page-fill {
+        gap: 0;
+    }
+    .quarto-dashboard .callout {
+        margin-bottom: 12px;
+        margin-top: auto;
+    }
+    div.callout-important.callout {
+        border-left: 5px solid #335A7A;
+        border-right: 1px solid #335A7A;
+        border-top: 1px solid #335A7A;
+        border-bottom: 1px solid #335A7A;
+    }
+    div.callout-important.callout-style-default>.callout-header {
+        background-color: #172C3C;
+        border-radius: 0 0.375rem 0.375rem 0;
+    }
+    .callout-btn-toggle {
+        display: none !important;
+    }
+    .cell-output-display:not(.no-overflow-x), .knitsql-table:not(.no-overflow-x) {
+        overflow-x: hidden;
+    }
+    .shiny-input-container .checkbox input:focus, .shiny-input-container .checkbox-inline input:focus {
+        box-shadow: none;
+    }
+    .quarto-dashboard .card .card-toolbar .shiny-input-container {
+        flex-direction: row;
+    }
+    .quarto-dashboard .card .card-toolbar .shiny-input-select {
+        width: 165px;
+    }
+    .card.bslib-value-box[data-full-screen="false"]:hover>*>.bslib-full-screen-enter
+    {
+        display: none;
+    }
+    .bslib-card .bslib-navs-card-title {
+        flex-direction: row-reverse;
+    }
+    .dashboard-card-no-title div.card-toolbar.html-fill-item.html-fill-container {
+        flex-grow: inherit;
+        width: fit-content;
+        margin-bottom: auto;
+    }
+</style>
+```
+
+```{r}
+#| context: setup
+#| output: false
+
+## Carrega pacotes
+
+if(!require('ggplot2'))install.packages("ggplot2");library(ggplot2)
+if(!require('dplyr'))install.packages("dplyr");library(dplyr)
+if(!require('geobr'))install.packages("geobr");library(geobr)
+if(!require('bslib'))install.packages("bslib");library(bslib)
+if(!require('plotly'))install.packages("plotly");library(plotly)
+if(!require('stringr'))install.packages("stringr");library(stringr)
+if(!require('ragg'))install.packages("ragg");library(ragg)
+
+
+cor_azul_escuro <- "#172C3C"
+cor_azul <- "#274862"
+cor_vermelho <- "#995052"
+cor_laranja <- "#D96831"
+cor_amarelo <- "#E6B33D"
+cor_cards <- cor_vermelho
+cor_barras <- cor_vermelho
+
+paleta_cores <- c("#48C837", "#3791C8", "#B737C8", "#E6B33D", "#D96831", "#995052")
+
+grupo_habitantes <- 1000
+```
+
+```{r}
+#| context: setup
+#| output: false
+
+## Carrega e transforma os data frames
+
+### Data frame com os dados de criminalidade
+dados_totais <- read.csv(gzfile("dados_dash/dados_totais_tratados.csv.gz"), check.names = FALSE, fileEncoding = "UTF-8")
+
+### Data frame com a população dos Municípios
+dados_populacao <- read.csv("dados_dash/dados_populacao_completo.csv")
+
+dados_populacao <- dados_populacao |>
+  rename(cod_municipio = localidade)
+
+
+### Data frame com o mapa de Minas Gerais
+mapa_minas <- read_municipality(code_muni = "MG")
+
+mapa_minas <- mapa_minas |> 
+  mutate(code_muni = as.numeric(substr(mapa_minas$code_muni, start = 1, stop = 6))) |>
+  select(code_muni, geom) |>
+  rename(cod_municipio = code_muni)
+
+```
+
+```{r}
+#| context: setup
+#| output: false
+
+## Variáveis importantes
+
+ano_minimo <- min(unique(dados_totais$ano))
+ano_maximo <- max(unique(dados_totais$ano))
+qtd_ranking <- 10
+```
+
+```{r}
+#| context: setup
+
+## Cria funções de uso geral
+
+filtra_dataframe <- function(nome_municipio = NULL, categ = NULL, anoIntervalo = NULL, tamanho_cidade = NULL, manter_muni = NULL, tipo_crime = NULL) {
+  
+  df <- dados_totais
+  
+  if(!is.null(nome_municipio)) {
+    df <- df |>
+      filter(municipio == nome_municipio)
+  }
+  
+  if(!identical(tipo_crime, c("Consumado", "Tentado")) & !is.null(tipo_crime)) {
+    df <- df |>
+    filter(tipo == tipo_crime)
+  }
+
+  
+  if(!is.null(categ)) {
+    df <- df |>
+      filter(categoria == categ)
+  }
+  
+  if(!is.null(anoIntervalo)) {
+    df <- df |>
+      filter(ano >= anoIntervalo[1] & ano <= anoIntervalo[2])
+  }
+  
+  if(!is.null(tamanho_cidade)) {
+    
+    if(tamanho_cidade != "Todas") {
+      
+      cod_muni <- dados_populacao
+      
+      # Verifica o porte da cidade pelo último ano do intervalo escolhido
+      if(!is.null(anoIntervalo)) {
+        cod_muni <- cod_muni |>
+          filter(ano == anoIntervalo[2])
+      } else {
+        cod_muni <- cod_muni |>
+          filter(ano == max(ano))
+      }
+      
+      if(tamanho_cidade == "Grandes") {
+        
+        cod_muni <- cod_muni |>
+        filter(populacao > 500000)
+        
+      } else if(tamanho_cidade == "Médias") {
+        
+        cod_muni <- cod_muni |>
+        filter(populacao >= 100000 & populacao <= 500000)
+        
+      } else if(tamanho_cidade == "Pequenas") {
+        
+        cod_muni <- cod_muni |>
+        filter(populacao < 100000)
+        
+      } else if(tamanho_cidade == "Grandes e médias") {
+        cod_muni <- cod_muni |>
+        filter(populacao >= 100000)
+        
+      } else if(tamanho_cidade == "Médias e pequenas") {
+        cod_muni <- cod_muni |>
+        filter(populacao <= 500000)
+        
+      }
+      
+      cod_muni <- cod_muni |>
+        pull(cod_municipio)
+      
+      ## Mantém o município mesmo que esteja abaixo do limite
+      if(!is.null(manter_muni)) { 
+        manter_cod <- dados_totais |>
+          filter(municipio == manter_muni) |>
+          pull(cod_municipio) |>
+          first()
+        
+        cod_muni <- c(cod_muni, manter_cod)
+      }
+      
+      df <- df |>
+        filter(cod_municipio %in% cod_muni)
+    }
+  }
+
+  df
+}
+
+populacao_cidade <- function(nome_municipio) {
+  
+  cod_muni <- dados_totais |>
+    filter(municipio == nome_municipio) |>
+    pull(cod_municipio) |>
+    first()
+  
+  pop <- dados_populacao |>
+    filter(ano == max(ano)) |>
+    filter(cod_municipio == cod_muni) |>
+    pull(populacao)
+  
+  pop <- format(pop, big.mark = ".")
+  pop
+}
+
+ranking_populacao <- function(nome_municipio) {
+  
+  cod_muni <- dados_totais |>
+      filter(municipio == nome_municipio) |>
+      pull(cod_municipio) |>
+      first()
+  
+  df <- dados_populacao |>
+    filter(ano == max(ano)) |>
+    arrange(desc(populacao))
+  
+  pos <- which(df$cod_municipio == cod_muni)
+  pos <- paste0(pos, "ª")
+  pos
+}
+
+texto_informativo <- function(nome_municipio) {
+  
+  nome <- nome_municipio
+  pop <- populacao_cidade(nome_municipio)
+  pos <- ranking_populacao(nome_municipio) 
+      
+  txt <- paste0(nome, " possui ", pop, " hab. e é a ", pos, " cidade mineira com maior população, em ", max(dados_populacao$ano), ".")
+  
+  txt
+}
+```
+
+```{r}
+#| context: setup
+
+## Cria funções para value boxes
+
+total_crimes <- function(nome_municipio, categ = NULL, anoIntervalo = NULL, tipo_crime = NULL) {
+  
+  df <- filtra_dataframe(nome_municipio = nome_municipio, categ = categ, anoIntervalo = anoIntervalo, tipo_crime = tipo_crime)
+
+  total <- df |>
+    pull(registros) |>
+    sum()
+  
+  total <- format(total, big.mark=".")
+  total
+}
+
+crimes_rel_habitantes <- function(nome_municipio, categ = NULL, anoIntervalo = NULL, tipo_crime = NULL) {
+  
+  df <- filtra_dataframe(nome_municipio = nome_municipio, categ = categ, anoIntervalo = anoIntervalo, tipo_crime = tipo_crime)
+  
+  total <- df |>
+    group_by(ano) |>
+    reframe(registros = sum(registros)) |>
+    pull(registros)
+  
+  cod_muni <- df |>
+    pull(cod_municipio) |>
+    first()
+
+  pop <- dados_populacao |>
+    filter(cod_municipio == cod_muni)
+    
+  if(!is.null(anoIntervalo)) {
+    pop <- pop |>
+      filter(ano >= anoIntervalo[1] & ano <= anoIntervalo[2])
+  }
+  
+  pop <- pop |>
+    pull(populacao)
+  
+  resultado <- sum(total*grupo_habitantes/pop)
+  resultado <- round(resultado, 2)
+  resultado <- format(resultado, decimal.mark=",")
+  resultado
+}
+
+media_crimes <- function(nome_municipio, categ = NULL, anoIntervalo = NULL, tipo_crime = NULL) {
+  
+  df <- filtra_dataframe(nome_municipio = nome_municipio, categ = categ, anoIntervalo = anoIntervalo, tipo_crime = tipo_crime)
+  
+  media <- df |>
+    group_by(ano, mes) |>
+    reframe(registros = sum(registros)) |>
+    pull(registros) |>
+    mean()
+  
+  media <- round(media, 2)
+  media <- format(media, decimal.mark = ",")
+  media
+}
+
+porc_alteracao_crimes <- function(nome_municipio, categ = NULL, anoIntervalo = NULL, tipo_crime = NULL) {
+  
+  df <- filtra_dataframe(nome_municipio = nome_municipio, categ = categ, anoIntervalo = anoIntervalo, tipo_crime = tipo_crime)
+  
+  valores <- df |>
+    group_by(ano, mes) |>
+    reframe(registros = sum(registros)) |>
+    pull(registros) |>
+    tail(2)
+  
+  if(valores[1] == 0) {
+    alteracao <- "Indefinida"
+  } else {
+    alteracao <- (valores[2]-valores[1])/valores[1]
+    alteracao <- round(alteracao*100, 2)
+    alteracao <- format(alteracao, decimal.mark = ",")
+    alteracao <- paste0(alteracao, "%")
+  }
+  alteracao
+}
+
+posicao_abs_municipio <- function(nome_municipio, categ = NULL, anoIntervalo = NULL, tipo_crime = NULL) {
+  
+  df <- filtra_dataframe(categ = categ, anoIntervalo = anoIntervalo, tipo_crime = tipo_crime)
+  
+  df <- df |>
+    group_by(municipio) |>
+    reframe(registros = sum(registros)) |>
+    arrange(desc(registros))
+  
+  posicao <- which(df$municipio == nome_municipio)
+  posicao <- paste0(posicao, "º")
+  posicao
+}
+
+posicao_rel_municipio <- function(nome_municipio, categ = NULL, anoIntervalo = NULL, tipo_crime = NULL) {
+  
+  df <- filtra_dataframe(categ = categ, anoIntervalo = anoIntervalo, tipo_crime = tipo_crime)
+  
+  df <- df |>
+    group_by(municipio, cod_municipio, ano) |>
+    reframe(registros = sum(registros))
+    
+  df <- df |>
+    left_join(dados_populacao, by=c("cod_municipio", "ano"))
+  
+  df <- df |>
+    mutate(registros_rel_habitantes = (registros/populacao)*grupo_habitantes) |>
+    group_by(municipio) |>
+    reframe(registros_rel_habitantes = sum(registros_rel_habitantes)) |>
+    arrange(desc(registros_rel_habitantes))
+  
+  posicao <- which(df$municipio == nome_municipio)
+  posicao <- paste0(posicao, "º")
+  posicao
+}
+```
+
+```{r}
+#| context: setup
+
+## Cria data frames para gráficos e tabelas
+
+df_total <- function(nome_municipio, categ = NULL, anoIntervalo = NULL, tipo_crime = NULL) {
+  
+  df <- filtra_dataframe(nome_municipio = nome_municipio, categ = categ, anoIntervalo = anoIntervalo, tipo_crime = tipo_crime)
+
+  if(is.null(categ)) {
+    
+    df <- df |>
+      select(categoria, registros)
+    
+    linhas_totais <- df |>
+      reframe(registros = sum(registros)) |>
+      mutate(categoria = "Total")
+  
+    df <- rbind(df, linhas_totais)
+    
+    df <- df |>
+      group_by(categoria) |>
+      reframe(registros = sum(registros)) |>
+      mutate(categoria = reorder(categoria, registros))
+    
+  } else {
+    
+    df <- df |>
+      select(natureza, registros)
+    
+    linhas_totais <- df |>
+      reframe(registros = sum(registros)) |>
+      mutate(natureza = "Total")
+    
+    df <- rbind(df, linhas_totais) 
+    
+    df <- df |>
+      group_by(natureza) |>
+      reframe(registros = sum(registros)) |>
+      mutate(natureza = reorder(natureza, registros))
+  }
+  
+  df
+}
+
+df_temporal <- function(nome_municipio, categ = NULL, anoIntervalo = NULL, dados_mensais = FALSE, tipo_crime = NULL) {
+  
+  df <- filtra_dataframe(nome_municipio = nome_municipio, categ = categ, anoIntervalo = anoIntervalo, tipo_crime = tipo_crime)
+
+  if(is.null(categ)) {
+    
+    if(dados_mensais == TRUE) {
+      
+      df <- df |>
+        select(categoria, registros, ano, mes)
+    
+      linhas_totais <- df |>
+        group_by(mes, ano) |>
+        reframe(registros = sum(registros)) |>
+        mutate(categoria = "Total")
+      
+      df <- rbind(df, linhas_totais)
+    
+      df <- df |>
+        group_by(categoria, mes, ano) |>
+        reframe(registros = sum(registros)) |>
+        arrange(ano, mes) 
+      
+    } else {
+      
+      df <- df |>
+        select(categoria, registros, ano)
+            
+      linhas_totais <- df |>
+        group_by(ano) |>
+        reframe(registros = sum(registros)) |>
+        mutate(categoria = "Total")
+      
+      df <- rbind(df, linhas_totais)
+    
+      df <- df |>
+        group_by(categoria, ano) |>
+        reframe(registros = sum(registros)) |>
+        arrange(ano)  
+    }
+    
+  } else {
+    
+    if(dados_mensais == TRUE) {
+      
+      df <- df |>
+        select(natureza, registros, mes, ano)
+    
+      linhas_totais <- df |>
+        group_by(mes, ano) |>
+        reframe(registros = sum(registros)) |>
+        mutate(natureza = "Total")
+    
+      df <- rbind(df, linhas_totais) |>
+        group_by(natureza, mes, ano) |>
+        reframe(registros = sum(registros)) |>
+        arrange(ano, mes) 
+      
+    } else {
+      
+      df <- df |>
+        select(natureza, registros, ano)
+    
+      linhas_totais <- df |>
+        group_by(ano) |>
+        reframe(registros = sum(registros)) |>
+        mutate(natureza = "Total")
+    
+      df <- rbind(df, linhas_totais) |>
+        group_by(natureza, ano) |>
+        reframe(registros = sum(registros)) |>
+        arrange(ano) 
+    }
+     
+  }
+  
+  if(dados_mensais == TRUE) {
+    
+    df$data <- as.Date(paste(df$ano, df$mes, "01", sep="-"))
+    
+  } else {
+    
+    df$data <- as.Date(paste(df$ano, "01", "01", sep="-"))
+
+  }
+  
+  df
+}
+
+df_ranking_crime <- function(nome_municipio, categ = NULL, anoIntervalo = NULL, tipo_crime = NULL, tamanho_cidade = NULL, ordem) {
+  
+  ## A variável nome_municipio recebido na função é passado como argumento de manter_muni na função que filtra o data frame 
+  
+  df <- filtra_dataframe(categ = categ, anoIntervalo = anoIntervalo, tipo_crime = tipo_crime, tamanho_cidade = tamanho_cidade, manter_muni = NULL)
+  ## Caso queira que o município selecionado não seja filtrado, utilize manter_muni = nome_municipio. Em NULL o município será filtrado (retirado) se não pertencer ao tamanho da cidade escolhido.
+  
+  df <- df |>
+    group_by(municipio, cod_municipio, ano) |>
+    reframe(registros = sum(registros))
+
+  
+  dados_populacao_filtrada <- dados_populacao
+  
+  if(!is.null(anoIntervalo)) {
+    dados_populacao_filtrada <- dados_populacao_filtrada |>
+      filter(ano >= anoIntervalo[1] & ano <= anoIntervalo[2])
+  }
+
+  ## Reúne em uma só tabela os dados dos registros e da população por ano. Calcula a taxa (registros relativos a população) por ano e depois soma
+  df <- df |>
+    left_join(dados_populacao_filtrada, by=c("cod_municipio", "ano")) |>
+    mutate(registros_rel_habitantes = (registros/populacao)*grupo_habitantes) |>
+    group_by(municipio, cod_municipio) |>
+    reframe(registros_rel_habitantes = sum(registros_rel_habitantes), registros = sum(registros)) |>
+    arrange(desc(registros_rel_habitantes))
+
+  
+  ## Reordena o data.frame de forma ascendente caso a ordem seja "Crescente". Se não for, mantém. 
+  if(ordem == "Crescente") {
+    df <- df |>
+      arrange(registros_rel_habitantes)
+  }
+  
+  qtd_linhas <- ifelse(nrow(df) < qtd_ranking, yes = nrow(df), no = qtd_ranking) 
+  
+  df_atualizado <- df |>
+    head(qtd_linhas) |>
+    mutate(pos = seq(1:qtd_linhas))
+        
+  ## Verifica se o município selecionado está no ranking
+  if(nome_municipio %in% df$municipio) {
+    pos_municipio <- which(df$municipio == nome_municipio)
+    
+    if(pos_municipio > qtd_linhas) {
+      df_atualizado <- df_atualizado |>
+        head(qtd_linhas) |>
+        bind_rows(df[pos_municipio,]) |>
+        mutate(pos = c(seq(1:(qtd_linhas)), pos_municipio))
+    }
+  }
+  
+  ## Arredonda a taxa (registros relativos a população) para duas casas decimais
+  df_atualizado <- df_atualizado |>
+    mutate(registros_rel_habitantes = round(registros_rel_habitantes,2))
+  
+  ## Define a mesma posição para taxa (registros relativos a população) iguais
+  for(i in 2:nrow(df_atualizado)) {
+    if(df_atualizado$registros_rel_habitantes[i] == df_atualizado$registros_rel_habitantes[i-1]) {
+      df_atualizado$pos[i] = df_atualizado$pos[i-1]
+    }
+  }
+  
+  ## Cria o nome da coluna de acordo com a categoria escolhida
+  coluna_taxa <- ""
+  if(is.null(categ)) {
+    coluna_taxa <- paste0("Crimes violentos por mil hab.")
+  } else {
+    coluna_taxa <- paste0(categ, " por mil hab.")
+  }
+  
+  df_atualizado <- df_atualizado |>
+    relocate(pos) |>
+    mutate(registros_rel_habitantes = format(registros_rel_habitantes, big.mark = ".", decimal.mark = ",")) |>
+    select(pos, municipio, registros_rel_habitantes) |>
+    rename(`#` = pos, `Município` = municipio, "{coluna_taxa}" := registros_rel_habitantes)
+   
+  df_atualizado 
+}
+
+df_ranking_populacao <- function(nome_municipio, anoIntervalo = NULL, tamanho_cidade = NULL, ordem) {
+  
+  ## A variável nome_municipio recebido na função é passado como argumento de manter_muni na função que filtra o data frame 
+  
+  df <- filtra_dataframe(anoIntervalo = anoIntervalo, tamanho_cidade = tamanho_cidade, manter_muni = NULL)
+  ## Caso queira que o município selecionado não seja filtrado, utilize manter_muni = nome_municipio. Em NULL o município será filtrado (retirado) se não pertencer ao tamanho da cidade escolhido.
+  
+  dados_populacao_filtrada <- dados_populacao
+  
+  if(!is.null(anoIntervalo)) {
+    dados_populacao_filtrada <- dados_populacao_filtrada |>
+      filter(ano >= anoIntervalo[1] & ano <= anoIntervalo[2])
+  }
+  
+  ## Reúne em uma só tabela os dados dos municípios e da população por ano. Depois seleciona apenas o último ano do intervalo de tempo escolhido
+  df <- df |>
+    left_join(dados_populacao_filtrada, by=c("cod_municipio", "ano")) |>
+    group_by(municipio, cod_municipio, populacao, ano) |>
+    reframe(registros = sum(registros)) |>
+    filter(ano == max(ano)) |>
+    arrange(desc(populacao)) 
+
+  ## Reordena o data.frame de forma ascendente caso a ordem seja "Crescente". Se não for, mantém. 
+  if(ordem == "Crescente") {
+    df <- df |>
+      arrange(populacao)
+  }
+  
+ qtd_linhas <- ifelse(nrow(df) < qtd_ranking, yes = nrow(df), no = qtd_ranking) 
+  
+  df_atualizado <- df |>
+    head(qtd_linhas) |>
+    mutate(pos = seq(1:qtd_linhas))
+        
+  ## Verifica se o município selecionado está no ranking
+  if(nome_municipio %in% df$municipio) {
+    pos_municipio <- which(df$municipio == nome_municipio)
+
+    if(pos_municipio > qtd_linhas) {
+      df_atualizado <- df_atualizado |>
+        head(qtd_linhas) |>
+        bind_rows(df[pos_municipio,]) |>
+        mutate(pos = c(seq(1:(qtd_linhas)), pos_municipio))
+    }
+  }
+  
+  ## Define a mesma posição para populações iguais
+  for(i in 2:nrow(df_atualizado)) {
+    if(df_atualizado$populacao[i] == df_atualizado$populacao[i-1]) {
+      df_atualizado$pos[i] = df_atualizado$pos[i-1]
+    }
+  }
+  
+  ## Cria nome da coluna de população de acordo com o ano
+  coluna_populacao <- paste0("População em ", max(df_atualizado$ano))
+  
+  
+  df_atualizado <- df_atualizado |>
+    relocate(pos) |>
+    mutate(populacao = format(populacao, big.mark = ".")) |>
+    select(pos, municipio, populacao) |>
+    rename(`#` = pos, `Município` = municipio, "{coluna_populacao}" := populacao)
+   
+  df_atualizado 
+}
+
+df_mapa <- function(categ = NULL, anoIntervalo = NULL, tipo_crime = NULL) {
+  
+  df <- filtra_dataframe(categ = categ, anoIntervalo = anoIntervalo, tipo_crime = tipo_crime)
+
+  df <- df |>
+    group_by(municipio, cod_municipio) |>
+    reframe(registros = sum(registros)) |>
+    left_join(dados_populacao, by="cod_municipio") |>
+    mutate(registros_rel_habitantes = (registros/populacao)*grupo_habitantes)
+
+  df <- left_join(mapa_minas, df, by="cod_municipio")
+  
+  df
+}
+```
+
+```{r}
+#| context: setup
+
+## Cria gráficos
+
+grafico_barras_natureza <- function(tabela, categ = NULL) {
+  
+  if(is.null(categ)) {
+    gg <- ggplot(data = tabela, aes(x=registros, y=categoria))
+  } else {
+    gg <- ggplot(data = tabela, aes(x=registros, y=natureza))
+  }
+  
+  gr <- gg +
+    geom_col(fill = cor_barras) +
+    geom_text(aes(label = registros, x = registros + max(registros)*(0.035), fontface = "bold"), hjust = 0, size = 5) +
+    coord_cartesian(xlim = c(0, max(tabela$registros)+max(tabela$registros)*(0.20))) +
+    scale_y_discrete(labels = function(x) str_wrap(x, width = 15)) +
+    labs(x = NULL, y = NULL) +
+    theme(axis.text.y = element_text(size=12), axis.text.x = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank(), axis.ticks = element_blank()) 
+  
+  gr
+}
+
+grafico_linhas_historico <- function(tabela, categ = NULL) {
+  
+  if(is.null(categ)) {
+    gg <- ggplot(data = tabela, aes(x=data, y=registros, group=categoria, color=categoria, text = paste("Registros:", registros, "<br>Data:", format(data, "%m/%y"), "<br>Categoria:", categoria)))
+  } else {
+    gg <- ggplot(data = tabela, aes(x=data, y=registros, group=natureza, color=natureza, text = paste("Registros:", registros, "<br>Data:", format(data, "%m/%y"), "<br>Natureza:", natureza)))
+  }
+  
+  gr <- gg +
+    geom_line()
+  
+  if(min(tabela$ano) == max(tabela$ano)) {
+    gr <- gr +
+      scale_x_date(date_breaks = "1 month", date_labels = "%m") +
+      labs(x = "Mês", y = NULL, color = NULL)
+  } else {
+    gr <- gr +
+      scale_x_date(date_breaks = "1 year", date_labels = "%y") +
+      labs(x = "Ano", y = NULL, color = NULL)
+  }
+  
+  gr <- gr +
+    scale_color_manual(values = paleta_cores) +
+    scale_y_continuous(
+      breaks = scales::pretty_breaks(), 
+      limits = c(0, NA), 
+      labels = scales::number_format(accuracy = 1, decimal.mark = ",")) +  # Apenas números inteiros
+    theme_minimal()
+  
+  
+  # Obter a lista de categorias ou naturezas
+  categorias_ou_naturezas <- if(is.null(categ)) unique(tabela$categoria) else unique(tabela$natureza)
+  
+  # Definir visibilidade inicial
+  visibilidade_inicial <- lapply(categorias_ou_naturezas, function(cat) {
+    if(cat == 'Total') { # A categoria Total é definida como visível
+      TRUE  # A categoria/natureza padrão será visível
+    } else {
+      "legendonly"  # As outras começarão ocultas, mas poderão ser ativadas pela legenda
+    }
+  })
+  
+  
+  gr_plotly <- ggplotly(gr, tooltip = "text") |>
+    layout(xaxis = list(autorange = TRUE), 
+           yaxis = list(autorange = TRUE,
+                        tickmode = "auto"),
+           legend = list(orientation = "h",    # Orientação horizontal
+                         x = 0.5,              # Posição centralizada no eixo X
+                         y = -0.5,             # Abaixo do gráfico no eixo Y
+                         xanchor = "center",   # Âncora da posição no centro
+                         yanchor = "top"),      # Âncora da posição no topo
+           showlegend = TRUE)     
+          
+  
+  # Definir a visibilidade de cada linha de acordo com a lista `visibilidade_inicial`
+  for(i in seq_along(visibilidade_inicial)) {
+    gr_plotly$x$data[[i]]$visible <- visibilidade_inicial[[i]]
+  }
+  
+  gr_plotly
+}
+
+grafico_mapa_violencia <- function(tabela) {
+  
+  gr <- ggplot() +
+    geom_sf(data = tabela, aes(fill=registros_rel_habitantes)) +
+    scale_fill_gradient(low = "#FFFFFF", high = "#492627", name = "Crimes \npor mil hab.") +
+    theme_void()
+  
+    gr
+}
+
+grafico_mapa_localizacao <- function(tabela, nome_municipio) {
+  
+  tabela <- tabela |>
+    mutate(muni_selecionado = ifelse(municipio == nome_municipio, yes=1, no=0)) |>
+    select(municipio, geom, muni_selecionado)
+  
+  gr <- ggplot() +
+    geom_sf(data = tabela, fill = "gray90", color = "gray75") +
+    geom_sf(data = subset(tabela, municipio == nome_municipio), fill = "blue", color = NA) +
+    labs(subtitle = "A cidade selecionada foi preenchida com a cor azul") +
+    theme(plot.subtitle = element_text(size=10)) +
+    theme_void()
+  
+  gr
+}
+```
+
+
+#  {.sidebar}
+
+```{r}
+selectInput("cidade", "Cidade:", choices = unique(dados_totais$municipio), selected = "UBERLANDIA")
+
+sidebarPanel("",
+             textOutput("popCidade")
+)
+
+selectInput("categoria", "Categoria:", choices = c("Todas", unique(dados_totais$categoria)), selected = "Todas")
+
+sliderInput("ano", "Ano:", value=c(ano_minimo, ano_maximo), min = ano_minimo, max = ano_maximo, sep="", step=TRUE, width="98%")
+
+checkboxGroupInput("tipoCrime", "Crime:", choices = c("Consumado", "Tentado"), inline = TRUE, selected=c("Consumado", "Tentado"))
+
+```
+
+::: {.callout-important collapse="true"}
+## Avisos
+Os dados são reportados mensalmente.
+
+São consideradas: 
+Cidades pequenas: menos de 100 mil hab.
+Cidades médias: com 100 mil a 500 mil hab.
+Cidades grandes: mais de 500 mil hab.
+
+A cidade é classificada de acordo com a população do último ano do intervalo de tempo escolhido.
+
+Caso o intervalo de tempo escolhido seja de um ano, a opção de 'Dados mensais' será automaticamente selecionada e a escala do gráfico mudará de 'ano' para 'mês'.
+
+Os dados da população de 2023 são iguais ao da população de 2022.
+
+Fonte dos dados: [Sejusp](https://www.seguranca.mg.gov.br/index.php/transparencia/dados-abertos)
+
+Dúvidas ou sugestões: petestatisticaufu@gmail.com
+:::
+
+# Estatísticas
+
+## Row {height="20%"}
+
+```{r}
+
+value_box(
+  title = "Número total de crimes",
+  theme = value_box_theme(bg = cor_cards),
+  value = textOutput("crimesTotais")
+)
+
+```
+
+```{r}
+
+value_box(
+  title = "Crimes por mil habitantes",
+  theme = value_box_theme(bg = cor_cards),
+  value = textOutput("crimesRelativos")
+)
+
+```
+
+```{r}
+
+value_box(
+  title = "Média mensal de crimes",
+  theme = value_box_theme(bg = cor_cards),
+  value = textOutput("crimesMediaMensal")
+)
+
+```
+
+```{r}
+
+value_box(
+  title = "Variação no último mês",
+  theme = value_box_theme(bg = cor_cards),
+  value = textOutput("crimesVariacao")
+)
+
+```
+
+```{r}
+
+value_box(
+  title = "Posição absoluta em MG",
+  theme = value_box_theme(bg = cor_cards),
+  value = textOutput("crimesPosAbsoluta")
+)
+
+```
+
+```{r}
+
+value_box(
+  title = "Posição relativa em MG",
+  theme = value_box_theme(bg = cor_cards),
+  value = textOutput("crimesPosRelativa")
+)
+
+```
+
+## Row
+
+### Column
+
+```{r}
+#| title: Natureza do crime
+
+plotOutput("gr_naturezaCrime")
+
+```
+
+### Column
+
+```{r}
+#| content: card-toolbar
+
+checkboxInput("dadosMensais", "Dados mensais", value=FALSE)
+
+```
+
+```{r}
+#| title: Dados históricos
+
+plotlyOutput("gr_historicoCrime")
+
+```
+
+
+# Rankings
+
+## Row {.tabset}
+
+```{r}
+#| title: Criminalidade
+
+tableOutput("tb_ranking")
+
+```
+
+```{r}
+#| title: População
+
+tableOutput("tb_populacao")
+
+```
+
+```{r}
+#| content: card-toolbar
+
+selectInput("pop", "Cidades:", choices = c("Todas", "Grandes", "Médias", "Pequenas", "Grandes e médias", "Médias e pequenas"), selected = "Todas")
+
+selectInput("ordem", "Ordem:", choices = c("Decrescente", "Crescente"), selected = "Decrescente")
+
+```
+
+# Mapas 
+
+## Row {.tabset}
+
+```{r}
+#| title: Mapa da violência
+
+plotOutput("gr_mapaViolencia")
+
+```
+
+```{r}
+#| title: Localização
+
+plotOutput("gr_localizacao")
+
+```
+
+
+```{r}
+#| context: server
+
+# Variáveis que recebem os inputs do sidebar
+cidade_escolhida <- reactive({
+  input$cidade
+})
+
+categoria_escolhida <- reactive({
+  if(input$categoria == "Todas") {
+    return (NULL)
+  } else {
+    input$categoria
+  }
+})
+
+ano_escolhido <- reactive({
+  if(identical(input$ano, c(ano_minimo, ano_maximo))) {
+    return (NULL)
+  } else {
+    input$ano
+  }
+})
+
+observe({
+  x <- input$tipoCrime
+  
+  if(is.null(x)) {
+    x <- c("Consumado", "Tentado")
+    updateCheckboxGroupInput(inputId = "tipoCrime", selected = x)
+  }
+})
+
+tipo_crime_escolhido <- reactive({
+  input$tipoCrime
+})
+
+# Texto exibido no sidebar
+output$popCidade <- renderText({
+  texto_informativo(cidade_escolhida())
+})
+  
+# Variável no gráfico de linhas
+observe({
+  intervalo_ano <- input$ano
+  dm <- input$dadosMensais # Observa clique em 'Dados Mensais' 
+  
+  if(intervalo_ano[1] == intervalo_ano[2]) {
+    updateCheckboxInput(inputId = "dadosMensais", value = TRUE)
+  }
+})
+
+dados_mensais_ativado <- reactive({
+  input$dadosMensais
+})
+
+# Variáveis em RAKINGS
+tamanho_cidade <- reactive({
+  input$pop
+})
+
+ordem_ranking <- reactive({
+  input$ordem
+})
+
+
+# Tabelas para criar gráficos
+tab_categoria_temporal <- reactive({df_temporal(nome_municipio = cidade_escolhida(), categ = categoria_escolhida(), anoIntervalo = ano_escolhido(), dados_mensais = dados_mensais_ativado(), tipo_crime = tipo_crime_escolhido())}) 
+
+tab_categoria_total <- reactive({df_total(nome_municipio = cidade_escolhida(), categ = categoria_escolhida(), anoIntervalo = ano_escolhido(), tipo_crime = tipo_crime_escolhido())}) 
+
+tab_mapa <- reactive({df_mapa(categ = categoria_escolhida(), anoIntervalo = ano_escolhido(), tipo_crime = tipo_crime_escolhido())})
+
+
+# Outputs exibidos em ESTATÍSTICAS
+output$crimesTotais <- renderText({
+  total_crimes(nome_municipio = cidade_escolhida(), categ = categoria_escolhida(), anoIntervalo = ano_escolhido(), tipo_crime = tipo_crime_escolhido())
+})
+
+output$crimesRelativos <- renderText({
+  crimes_rel_habitantes(nome_municipio = cidade_escolhida(), categ = categoria_escolhida(), anoIntervalo = ano_escolhido(), tipo_crime = tipo_crime_escolhido())
+})
+
+output$crimesMediaMensal <- renderText({
+  media_crimes(nome_municipio = cidade_escolhida(), categ = categoria_escolhida(), anoIntervalo = ano_escolhido(), tipo_crime = tipo_crime_escolhido())
+})
+
+output$crimesVariacao <- renderText({
+  porc_alteracao_crimes(nome_municipio = cidade_escolhida(), categ = categoria_escolhida(), anoIntervalo = ano_escolhido(), tipo_crime = tipo_crime_escolhido())
+})
+
+output$crimesPosAbsoluta <- renderText({
+  posicao_abs_municipio(nome_municipio = cidade_escolhida(), categ = categoria_escolhida(), anoIntervalo = ano_escolhido(), tipo_crime = tipo_crime_escolhido())
+})
+
+output$crimesPosRelativa <- renderText({
+  posicao_rel_municipio(nome_municipio = cidade_escolhida(), categ = categoria_escolhida(), anoIntervalo = ano_escolhido(), tipo_crime = tipo_crime_escolhido())
+})
+
+output$gr_naturezaCrime <- renderPlot({
+  grafico_barras_natureza(tabela = tab_categoria_total(), categ = categoria_escolhida())
+})
+
+output$gr_historicoCrime <- renderPlotly({
+  grafico_linhas_historico(tabela = tab_categoria_temporal(), categ = categoria_escolhida())
+})
+
+
+# Outputs exibidos em RANKINGS
+output$tb_ranking <- renderTable({
+  df_ranking_crime(nome_municipio = cidade_escolhida(), categ = categoria_escolhida(), anoIntervalo = ano_escolhido(), tipo_crime = tipo_crime_escolhido(), tamanho_cidade = tamanho_cidade(), ordem = ordem_ranking())
+})
+
+output$tb_populacao <- renderTable({
+  df_ranking_populacao(nome_municipio = cidade_escolhida(), anoIntervalo = ano_escolhido(), tamanho_cidade = tamanho_cidade(), ordem = ordem_ranking())
+})
+
+# Outputs exibidos em MAPAS
+output$gr_mapaViolencia <- renderPlot({
+  grafico_mapa_violencia(tabela = tab_mapa())
+})
+
+output$gr_localizacao <- renderPlot({
+  grafico_mapa_localizacao(tabela = tab_mapa(), nome_municipio = cidade_escolhida())
+})
+```
