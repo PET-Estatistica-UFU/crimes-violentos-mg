@@ -2,7 +2,7 @@ on:
     workflow_dispatch:
   
   
-name: Update data
+name: Deploy Dash
   
 jobs:
     updade-data:
