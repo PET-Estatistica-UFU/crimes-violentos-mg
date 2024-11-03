@@ -36,6 +36,10 @@ jobs:
                 any::httr
                 any::rsconnect
                 any::shiny
+                any::cpp11
+                any::systemfonts
+                any::textshaping
+                any::tidyr
 
         # to access the code inside our repository
         - name: Check out repository
