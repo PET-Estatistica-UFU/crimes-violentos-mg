@@ -4,7 +4,10 @@ format:
   dashboard:
     scrolling: false
     orientation: rows
+  html:
+    self-contained: true  # importante!
 server: shiny
+runtime: shiny
 ---
 
 ```{=html}
@@ -117,7 +120,7 @@ if(!require('bslib'))install.packages("bslib");library(bslib)
 if(!require('plotly'))install.packages("plotly");library(plotly)
 if(!require('stringr'))install.packages("stringr");library(stringr)
 if(!require('ragg'))install.packages("ragg");library(ragg)
-
+if(!require('quarto'))install.packages("quarto");library(quarto)
 
 cor_azul_escuro <- "#172C3C"
 cor_azul <- "#274862"
