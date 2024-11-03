@@ -26,35 +26,22 @@ jobs:
           uses: r-lib/actions/setup-r-dependencies@v2
           with:
             packages: |
-                any::ggplot2 
                 any::dplyr
-                any::geobr
-                any::bslib
-                any::plotly
-                any::stringr
-                any::ragg
                 any::httr
-                any::rsconnect
 
         # to access the code inside our repository
         - name: Check out repository
           uses: actions/checkout@v4
 
         # exec script
-        - name: Set up Quarto
-          uses: quarto-dev/quarto-actions/setup@v2
+        - name: Webscraping
+          run: Rscript -e 'source("1-raspagem_api_ibge_populacao.R")'
+          
+        - name: Ppopulation Treatment
+          run: Rscript -e 'source("2-tratamento_dados_populacao.R")'
 
-        - name: Render Quarto Project
-          run: quarto render dash.qmd
-
-        # deploy
-        - name: deploy
-          run: Rscript -e 'source("deploy.R")'
-          env:
-            NAME: ${{ vars.NAME }}
-            TOKEN: ${{ secrets.TOKEN }}
-            SECRET: ${{ secrets.SECRET }}
-
+        - name: Criminality Treatment
+          run: Rscript -e 'source("3-tratamento_dados_criminalidade.R")'
 
         - name: Set current date as env variable
           run: echo "NOW=$(date +'%Y-%m-%dT%H:%M:%S')" >> $GITHUB_ENV
