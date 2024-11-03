@@ -1,0 +1,54 @@
+on:
+    workflow_dispatch:
+  
+  
+name: Update data
+  
+jobs:
+    updade-data:
+        runs-on: ubuntu-latest
+        permissions:
+        # Give the default GITHUB_TOKEN write permission to commit and push the
+        # added or changed files to the repository.
+            contents: write
+        steps:
+        # that installs R on the machine
+        - name: Set up R
+          uses: r-lib/actions/setup-r@v2
+          with:
+            # The R version to download (if necessary) and use.
+            r-version: '4.3.3'
+            # uses the RStudio Package Manager
+            use-public-rspm: true
+
+        # Install packages
+        - name: Install packages
+          uses: r-lib/actions/setup-r-dependencies@v2
+          with:
+            packages: |
+                any::dplyr
+                any::httr
+
+        # to access the code inside our repository
+        - name: Check out repository
+          uses: actions/checkout@v4
+
+        # exec script
+        - name: Webscraping
+          run: Rscript -e 'source("1-raspagem_api_ibge_populacao.R")'
+          
+        - name: Ppopulation Treatment
+          run: Rscript -e 'source("2-tratamento_dados_populacao.R")'
+
+        - name: Criminality Treatment
+          run: Rscript -e 'source("3-tratamento_dados_criminalidade.R")'
+
+        - name: Set current date as env variable
+          run: echo "NOW=$(date +'%Y-%m-%dT%H:%M:%S')" >> $GITHUB_ENV
+        - name: Echo current date
+          run: echo $NOW 
+
+        # Commit all changed files back to the repository
+        - uses: stefanzweifel/git-auto-commit-action@v5
+          with:
+            commit_message: data updated ${{ env.NOW }}
