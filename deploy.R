@@ -4,10 +4,8 @@ rsconnect::setAccountInfo(name=Sys.getenv("NAME"),
                           token=Sys.getenv("TOKEN"), 
                           secret=Sys.getenv("SECRET"))
 
-rsconnect::forgetDeployment("crimesmg")
-
 rsconnect::deployApp(
-  appName = "crimesmg",
+  appName = "crimes-mg",
   appFiles = c(
     "dash.qmd",
     "dash.html",
