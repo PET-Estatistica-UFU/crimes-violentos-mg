@@ -24,14 +24,14 @@ jobs:
         - name: Install required system dependencies
           run: |
             sudo apt-get update -qq
-            sudo apt-get install -y libudunits2-dev libharfbuzz-dev libfribidi-dev libtiff5-dev
+            sudo apt-get install -y libudunits2-dev libharfbuzz-dev libfribidi-dev libtiff5-dev libproj-dev libgdal-dev libgeos-dev liblwgeom-dev
 
         - name: Install required R packages
           run: |
             Rscript -e 'install.packages(c("ggplot2", "geobr", "plotly", "stringr", "ragg", "httr", "rsconnect", "shiny", "quarto",
                                            "cpp11", "systemfonts", "textshaping", "tidyr", "bslib"), repos="https://cran.r-project.org")'
     
-                                           
+
         # to access the code inside our repository
         - name: Check out repository
           uses: actions/checkout@v4
