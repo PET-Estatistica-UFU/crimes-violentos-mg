@@ -40,6 +40,7 @@ jobs:
                 any::systemfonts
                 any::textshaping
                 any::tidyr
+                any::quarto
 
         # to access the code inside our repository
         - name: Check out repository
