@@ -4,7 +4,6 @@ rsconnect::setAccountInfo(name=Sys.getenv("NAME"),
                           token=Sys.getenv("TOKEN"), 
                           secret=Sys.getenv("SECRET"))
 
-rsconnect::forgetDeployment("crimes-mg")
 
 rsconnect::deployApp(
   appName = "crimes-mg",
