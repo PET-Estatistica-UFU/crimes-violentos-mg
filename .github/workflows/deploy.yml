@@ -31,10 +31,7 @@ jobs:
             Rscript -e 'install.packages(c("ggplot2", "geobr", "plotly", "stringr", "ragg", "httr", "rsconnect", "shiny", "quarto",
                                            "cpp11", "systemfonts", "textshaping", "tidyr", "bslib"), repos="https://cran.r-project.org")'
     
-        - name: Deploy application
-          run: Rscript -e 'source("deploy.R")'  
-          
-
+                                           
         # to access the code inside our repository
         - name: Check out repository
           uses: actions/checkout@v4
