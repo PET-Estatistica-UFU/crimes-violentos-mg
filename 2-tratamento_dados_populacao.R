@@ -22,7 +22,10 @@ dados_populacao_2023 <- dados_populacao_antigo |>
 dados_populacao_2024 <- dados_populacao_antigo |>
   mutate(ano = 2024)
 
-dados_populacao_antigo <- bind_rows(dados_populacao_antigo, dados_populacao_2023, dados_populacao_2024)
+dados_populacao_2025 <- dados_populacao_antigo |>
+  mutate(ano = 2025)
+
+dados_populacao_antigo <- bind_rows(dados_populacao_antigo, dados_populacao_2023, dados_populacao_2024, dados_populacao_2025)
 
 dados_populacao_antigo <- dados_populacao_antigo |>
   arrange(localidade, ano) |>
