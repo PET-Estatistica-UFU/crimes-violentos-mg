@@ -14,6 +14,7 @@ dados_totais_tratados <- data.frame()
 
 for(file in cv_files) {
   dados <- read.csv(paste0("dados_input/", file), sep = ";", check.names = FALSE, fileEncoding = "Latin1")
+  dados$RISP <- as.character(dados$RISP) # Transforma em caracter para padronizar com os novos arquivos (a partir de agosto/25)
   dados_totais_tratados <- bind_rows(dados_totais_tratados, dados)
 }
 rm(dados)
