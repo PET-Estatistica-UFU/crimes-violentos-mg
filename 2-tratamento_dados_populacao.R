@@ -5,8 +5,8 @@ if(!require('readxl'))install.packages("readxl");library(readxl)
 
 dados_populacao_antigo <- read.csv("dados_input/populacao-minas-ibge.csv")
 dados_populacao_novo <- read.csv("dados_input/ibge_populacao_municipio.csv")
-POP2024 <- read_excel("POP2024.xlsx", sheet = "Página1")
-POP2025 <- read_excel("POP2025.xlsx", sheet = "Página2")
+POP2024 <- read_excel("dados_input/POP2024.xlsx", sheet = "Página1")
+POP2025 <- read_excel("dados_input/POP2025.xlsx", sheet = "Página2")
 
 dados_populacao_novo <- dados_populacao_novo |>
   filter(sigla_uf == "MG") |>
