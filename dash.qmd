@@ -127,7 +127,7 @@ cor_amarelo <- "#E6B33D"
 cor_cards <- cor_vermelho
 cor_barras <- cor_vermelho
 
-paleta_cores <- c("#48C837", "#3791C8", "#B737C8", "#E6B33D", "#D96831", "#995052")
+paleta_cores <- c("#274862", "#48C837", "#3791C8", "#B737C8", "#E6B33D", "#D96831", "#995052")
 
 grupo_habitantes <- 1000
 ```
@@ -773,20 +773,7 @@ grafico_linhas_historico <- function(tabela, categ = NULL) {
       labels = scales::number_format(accuracy = 1, decimal.mark = ",")) +  # Apenas números inteiros
     theme_minimal()
   
-  
-  # Obter a lista de categorias ou naturezas
-  categorias_ou_naturezas <- if(is.null(categ)) unique(tabela$categoria) else unique(tabela$natureza)
-  
-  # Definir visibilidade inicial
-  visibilidade_inicial <- lapply(categorias_ou_naturezas, function(cat) {
-    if(cat == 'Total') { # A categoria Total é definida como visível
-      TRUE  # A categoria/natureza padrão será visível
-    } else {
-      "legendonly"  # As outras começarão ocultas, mas poderão ser ativadas pela legenda
-    }
-  })
-  
-  
+ 
   gr_plotly <- ggplotly(gr, tooltip = "text") |>
     layout(xaxis = list(autorange = TRUE), 
            yaxis = list(autorange = TRUE,
@@ -797,11 +784,18 @@ grafico_linhas_historico <- function(tabela, categ = NULL) {
                          xanchor = "center",   # Âncora da posição no centro
                          yanchor = "top"),      # Âncora da posição no topo
            showlegend = TRUE)     
-          
+
+
+  # Definir a visibilidade de cada linha
+  for (i in seq_along(gr_plotly$x$data)) {
   
-  # Definir a visibilidade de cada linha de acordo com a lista `visibilidade_inicial`
-  for(i in seq_along(visibilidade_inicial)) {
-    gr_plotly$x$data[[i]]$visible <- visibilidade_inicial[[i]]
+    nome_trace <- gr_plotly$x$data[[i]]$name
+    
+    if (!is.null(nome_trace) && nome_trace == "Total") {
+      gr_plotly$x$data[[i]]$visible <- TRUE
+    } else {
+      gr_plotly$x$data[[i]]$visible <- "legendonly"
+    }
   }
   
   gr_plotly
