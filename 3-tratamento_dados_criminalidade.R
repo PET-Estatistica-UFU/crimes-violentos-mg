@@ -13,8 +13,7 @@ dados_totais_tratados <- data.frame()
 # for each file, read and treat the data
 
 for(file in cv_files) {
-  dados <- read.csv(paste0("dados_input/", file), sep = ";", check.names = FALSE, fileEncoding = "Latin1")
-  dados$RISP <- as.character(dados$RISP) # Transforma em caracter para padronizar com os novos arquivos (a partir de agosto/25)
+  dados <- read.csv(paste0("dados_input/", file), sep = ";", check.names = FALSE, fileEncoding = "utf-8")
   dados_totais_tratados <- bind_rows(dados_totais_tratados, dados)
 }
 rm(dados)
@@ -23,7 +22,7 @@ rm(dados)
 ## Seleciona apenas as colunas necessárias
 remove_colunas <- function(df) {
   df <- df |>
-    rename(registros = Registros, natureza = Natureza, municipio = Município, cod_municipio = `Cod IBGE`, mes = Mês, ano = Ano) |>
+    rename(registros = Registros, natureza = Natureza, municipio = Município, cod_municipio = `Cód. IBGE`, mes = Mês, ano = `Ano Fato`) |>
     select(registros, natureza, municipio, cod_municipio, mes, ano)
   
   df
@@ -31,11 +30,56 @@ remove_colunas <- function(df) {
 
 dados_totais_tratados <- remove_colunas(dados_totais_tratados)
 
+# Valores originais
+originais <- c(
+  "ESTUPRO CONSUMADO",
+  "ESTUPRO DE VULNERAVEL CONSUMADO",
+  "ESTUPRO DE VULNERAVEL TENTADO",
+  "ESTUPRO TENTADO",
+  "EXTORSAO CONSUMADO",
+  "EXTORSAO MEDIANTE SEQUESTRO CONSUMADO",
+  "EXTORSAO TENTADO",
+  "FEMINICIDIO TENTADO",
+  "HOMICIDIO TENTADO",
+  "ROUBO CONSUMADO",
+  "ROUBO TENTADO",
+  "SEQUESTRO E CARCERE PRIVADO CONSUMADO",
+  "SEQUESTRO E CARCERE PRIVADO TENTADO",
+  "FEMINICIDIO CONSUMADO (REGISTROS)",
+  "HOMICIDIO CONSUMADO (REGISTROS)"
+)
 
-## Cria uma coluna com as 5 grandes categorias "Estupro", "Sequestro", "Extorsão", "Roubo" e "Homicídio"
+# Valores corrigidos
+corrigidos <- c(
+  "Estupro Consumado",
+  "Estupro de Vulnerável Consumado",
+  "Estupro de Vulnerável Tentado",
+  "Estupro Tentado",
+  "Extorsão Consumado",
+  "Extorsão Mediante Sequestro Consumado",
+  "Extorsão Tentado",
+  "Feminicídio Tentado",
+  "Homicídio Tentado",
+  "Roubo Consumado",
+  "Roubo Tentado",
+  "Sequestro e Cárcere Privado Consumado",
+  "Sequestro e Cárcere Privado Tentado",
+  "Feminicídio Consumado (Registros)",
+  "Homicídio Consumado (Registros)"
+)
+
+# Cria dicionário
+dicionario <- setNames(corrigidos, originais)
+
+# Aplica a substituição
+dados_totais_tratados$natureza <- dicionario[dados_totais_tratados$natureza]
+
+
+## Cria uma coluna com as 5 grandes categorias "Estupro", "Sequestro", "Extorsão", "Roubo", "Homicídio" e "Feminicídio"
+
 cria_categorias <- function(df) {
   df$categoria <- ""
-  categorias_crimes <- c("Estupro", "Sequestro", "Extorsão", "Roubo", "Homicídio") 
+  categorias_crimes <- c("Estupro", "Sequestro", "Extorsão", "Roubo", "Homicídio", "Feminicídio") 
   
   # Existe a natureza 'Extorsão Mediante Sequestro Consumado'. 
   # Como Extorsão está depois de Sequestro no vetor acima, não haverá problema.
