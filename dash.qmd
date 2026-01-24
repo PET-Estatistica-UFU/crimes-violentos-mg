@@ -848,7 +848,12 @@ checkboxGroupInput("tipoCrime", "Crime:", choices = c("Consumado", "Tentado"), i
 
 ::: {.callout-important collapse="true"}
 ## Avisos
-Os dados são reportados mensalmente.
+## Avisos
+Fonte dos dados: [Sejusp](https://www.seguranca.mg.gov.br/index.php/transparencia/dados-abertos)
+
+Os dados são reportados mensalmente e se referem aos registros, e não à quantidade de vítimas.
+
+Os dados de feminicídio passaram a ser reportados separadamente de hominício a partir 2025.  
 
 São consideradas: 
 Cidades pequenas: menos de 100 mil hab.
@@ -860,8 +865,6 @@ A cidade é classificada de acordo com a população do último ano do intervalo
 Caso o intervalo de tempo escolhido seja de um ano, a opção de 'Dados mensais' será automaticamente selecionada e a escala do gráfico mudará de 'ano' para 'mês'.
 
 Os dados da população de 2023 são iguais ao da população de 2022.
-
-Fonte dos dados: [Sejusp](https://www.seguranca.mg.gov.br/index.php/transparencia/dados-abertos)
 
 Dúvidas ou sugestões: petestatisticaufu@gmail.com
 :::
