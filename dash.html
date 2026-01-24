@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.8.26">
+<meta name="generator" content="quarto-1.8.27">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -31,9 +31,9 @@ ul.task-list li input[type="checkbox"] {
 <script src="dash_files/libs/quarto-html/tippy.umd.min.js"></script>
 <script src="dash_files/libs/quarto-html/anchor.min.js"></script>
 <link href="dash_files/libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="dash_files/libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
-<link href="dash_files/libs/quarto-html/quarto-syntax-highlighting-dark-b758ccaa5987ceb1b75504551e579abf.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
-<link href="dash_files/libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<link href="dash_files/libs/quarto-html/quarto-syntax-highlighting-ed96de9b727972fe78a7b5d16c58bf87.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="dash_files/libs/quarto-html/quarto-syntax-highlighting-dark-4d9afe2b8d18ee9fa5d0d57b5ed4214d.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="dash_files/libs/quarto-html/quarto-syntax-highlighting-ed96de9b727972fe78a7b5d16c58bf87.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="dash_files/libs/bootstrap/bootstrap.min.js"></script>
 <link href="dash_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="dash_files/libs/bootstrap/bootstrap-6a464a75749143d765cc8984e0decab1.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
@@ -276,7 +276,7 @@ Natureza do crime
 </bslib-tooltip><script data-bslib-card-init="">bslib.Card.initializeAllCards();</script></div>
 </div><div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-rows: minmax(3em, 1fr); grid-auto-columns: minmax(0, 1fr);">
 <div class="card cell html-fill-item html-fill-container bslib-card" data-title="Dados históricos" data-bslib-card-init="" data-require-bs-caller="card()" data-full-screen="false">
-<div class="card-header"><div class="card-toolbar html-fill-item html-fill-container" data-target-position="header" data-target-element="next"><div class="card-title html-fill-item html-fill-container"><span style="display: inline">
+<div class="card-header"><div class="card-toolbar html-fill-item html-fill-container" data-target-element="next" data-target-position="header"><div class="card-title html-fill-item html-fill-container"><span style="display: inline">
 Dados históricos
 </span></div>
 <div class="cell-output-display html-fill-item html-fill-container">
@@ -309,7 +309,7 @@ Dados históricos
 <div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-rows: minmax(3em, 1fr); grid-auto-columns: minmax(0, 1fr);">
 <div class="card tabset html-fill-item html-fill-container bslib-card" data-bslib-card-init="" data-require-bs-caller="card()" data-full-screen="false">
 <div class="card-header dashboard-card-no-title bslib-navs-card-title">
-<div class="card-toolbar html-fill-item html-fill-container" data-target-position="header" data-target-element="next">
+<div class="card-toolbar html-fill-item html-fill-container" data-target-element="next" data-target-position="header">
 <div class="cell-output-display html-fill-item html-fill-container no-overflow-x">
 <div class="form-group shiny-input-container html-fill-item html-fill-container">
 <label class="control-label" id="pop-label" for="pop">Cidades:</label>
@@ -1299,12 +1299,16 @@ Dados históricos
 </div>
 <div id="callout-1" class="callout-1-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<p>Os dados são reportados mensalmente.</p>
+<div class="h2">
+Avisos
+</div>
+<p>Fonte dos dados: <a href="https://www.seguranca.mg.gov.br/index.php/transparencia/dados-abertos">Sejusp</a></p>
+<p>Os dados são reportados mensalmente e se referem aos registros, e não à quantidade de vítimas.</p>
+<p>Os dados de feminicídio passaram a ser reportados separadamente de hominício a partir 2025.</p>
 <p>São consideradas: Cidades pequenas: menos de 100 mil hab. Cidades médias: com 100 mil a 500 mil hab. Cidades grandes: mais de 500 mil hab.</p>
 <p>A cidade é classificada de acordo com a população do último ano do intervalo de tempo escolhido.</p>
 <p>Caso o intervalo de tempo escolhido seja de um ano, a opção de ‘Dados mensais’ será automaticamente selecionada e a escala do gráfico mudará de ‘ano’ para ‘mês’.</p>
 <p>Os dados da população de 2023 são iguais ao da população de 2022.</p>
-<p>Fonte dos dados: <a href="https://www.seguranca.mg.gov.br/index.php/transparencia/dados-abertos">Sejusp</a></p>
 <p>Dúvidas ou sugestões: petestatisticaufu@gmail.com</p>
 </div>
 </div>
@@ -2199,7 +2203,7 @@ ojs_define <- function(..., .session = shiny::getDefaultReactiveDomain()) {
 <!--/html_preserve-->
 <!--html_preserve-->
 <script type="application/shiny-prerendered" data-context="execution_dependencies">
-{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["packages"]}},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["packages","version"]},"class":{"type":"character","attributes":{},"value":["data.frame"]},"row.names":{"type":"integer","attributes":{},"value":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80]}},"value":[{"type":"character","attributes":{},"value":["base","bslib","cachem","class","classInt","cli","compiler","curl","data.table","datasets","DBI","digest","dplyr","e1071","evaluate","farver","fastmap","fs","generics","geobr","ggplot2","glue","graphics","grDevices","grid","gtable","htmltools","htmlwidgets","httpuv","httr","jquerylib","jsonlite","KernSmooth","knitr","later","lazyeval","lifecycle","magrittr","memoise","methods","mime","otel","pillar","pkgconfig","plotly","processx","promises","proxy","ps","purrr","quarto","R6","ragg","RColorBrewer","Rcpp","rlang","rmarkdown","rstudioapi","S7","sass","scales","sf","shiny","stats","stringi","stringr","systemfonts","textshaping","tibble","tidyr","tidyselect","tools","units","utils","vctrs","viridisLite","withr","xfun","xtable","yaml"]},{"type":"character","attributes":{},"value":["4.3.3","0.9.0","1.1.0","7.3-22","0.4-11","3.6.5","4.3.3","7.0.0","1.18.0","4.3.3","1.2.3","0.6.39","1.1.4","1.7-17","1.0.5","2.1.2","1.2.0","1.6.6","0.1.4","1.9.1","4.0.1","1.8.0","4.3.3","4.3.3","4.3.3","0.3.6","0.5.9","1.6.4","1.6.16","1.4.7","0.1.4","2.0.0","2.23-22","1.51","1.4.4","0.2.2","1.0.4","2.0.4","2.0.1","4.3.3","0.13","0.2.0","1.11.1","2.0.3","4.11.0","3.8.6","1.5.0","0.4-29","1.9.1","1.2.0","1.5.1","2.6.1","1.5.0","1.1-3","1.1.0","1.1.6","2.30","0.17.1","0.2.1","0.4.10","1.4.0","1.0-23","1.12.1","4.3.3","1.8.7","1.6.0","1.3.1","1.0.4","3.3.0","1.3.2","1.2.1","4.3.3","1.0-0","4.3.3","0.6.5","0.4.2","3.0.2","0.55","1.8-4","2.3.12"]}]}]}
+{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["packages"]}},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["packages","version"]},"class":{"type":"character","attributes":{},"value":["data.frame"]},"row.names":{"type":"integer","attributes":{},"value":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80]}},"value":[{"type":"character","attributes":{},"value":["base","bslib","cachem","class","classInt","cli","compiler","curl","data.table","datasets","DBI","digest","dplyr","e1071","evaluate","farver","fastmap","fs","generics","geobr","ggplot2","glue","graphics","grDevices","grid","gtable","htmltools","htmlwidgets","httpuv","httr","jquerylib","jsonlite","KernSmooth","knitr","later","lazyeval","lifecycle","magrittr","memoise","methods","mime","otel","pillar","pkgconfig","plotly","processx","promises","proxy","ps","purrr","quarto","R6","ragg","RColorBrewer","Rcpp","rlang","rmarkdown","rstudioapi","S7","sass","scales","sf","shiny","stats","stringi","stringr","systemfonts","textshaping","tibble","tidyr","tidyselect","tools","units","utils","vctrs","viridisLite","withr","xfun","xtable","yaml"]},{"type":"character","attributes":{},"value":["4.3.3","0.9.0","1.1.0","7.3-22","0.4-11","3.6.5","4.3.3","7.0.0","1.18.0","4.3.3","1.2.3","0.6.39","1.1.4","1.7-17","1.0.5","2.1.2","1.2.0","1.6.6","0.1.4","1.9.1","4.0.1","1.8.0","4.3.3","4.3.3","4.3.3","0.3.6","0.5.9","1.6.4","1.6.16","1.4.7","0.1.4","2.0.0","2.23-22","1.51","1.4.5","0.2.2","1.0.5","2.0.4","2.0.1","4.3.3","0.13","0.2.0","1.11.1","2.0.3","4.11.0","3.8.6","1.5.0","0.4-29","1.9.1","1.2.1","1.5.1","2.6.1","1.5.0","1.1-3","1.1.1","1.1.7","2.30","0.18.0","0.2.1","0.4.10","1.4.0","1.0-24","1.12.1","4.3.3","1.8.7","1.6.0","1.3.1","1.0.4","3.3.1","1.3.2","1.2.1","4.3.3","1.0-0","4.3.3","0.7.1","0.4.2","3.0.2","0.56","1.8-4","2.3.12"]}]}]}
 </script>
 <!--/html_preserve-->
 
