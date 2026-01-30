@@ -739,7 +739,7 @@ grafico_barras_natureza <- function(tabela, categ = NULL) {
     coord_cartesian(xlim = c(0, max(tabela$registros)+max(tabela$registros)*(0.20))) +
     scale_y_discrete(labels = function(x) str_wrap(x, width = 15)) +
     labs(x = NULL, y = NULL) +
-    theme(axis.text.y = element_text(size=12), axis.text.x = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank(), axis.ticks = element_blank()) 
+    theme(axis.text.y = element_text(size=13, face = "bold"), axis.text.x = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank(), axis.ticks = element_blank()) 
   
   gr
 }
