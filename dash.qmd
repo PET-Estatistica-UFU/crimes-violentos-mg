@@ -848,7 +848,7 @@ checkboxGroupInput("tipoCrime", "Crime:", choices = c("Consumado", "Tentado"), i
 
 ::: {.callout-important collapse="true"}
 ## Avisos
-## Avisos
+
 Fonte dos dados: [Sejusp](https://www.seguranca.mg.gov.br/index.php/transparencia/dados-abertos)
 
 Os dados são reportados mensalmente e se referem aos registros, e não à quantidade de vítimas.
