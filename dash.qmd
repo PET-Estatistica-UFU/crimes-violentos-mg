@@ -151,6 +151,8 @@ dados_populacao <- dados_populacao |>
 ### Data frame com o mapa de Minas Gerais
 mapa_minas <- read_municipality(code_muni = "MG")
 
+print(class(mapa_minas))
+
 mapa_minas <- mapa_minas |> 
   mutate(code_muni = as.numeric(substr(mapa_minas$code_muni, start = 1, stop = 6))) |>
   select(code_muni, geom) |>
