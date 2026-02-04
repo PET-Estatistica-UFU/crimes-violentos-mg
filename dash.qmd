@@ -149,7 +149,11 @@ dados_populacao <- dados_populacao |>
 
 
 ### Data frame com o mapa de Minas Gerais
-mapa_minas <- read_municipality(code_muni = "MG")
+mapa_minas <- readRDS("dados_dash/mapa_minas.rds")
+
+if (is.null(mapa_minas)) {
+  stop("Falha ao carregar mapa_minas — read_municipality retornou NULL")
+} # Verifica se leu o mapa corretamente
 
 print(class(mapa_minas))
 
