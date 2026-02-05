@@ -149,13 +149,19 @@ dados_populacao <- dados_populacao |>
 
 
 ### Data frame com o mapa de Minas Gerais
-mapa_minas <- readRDS("dados_dash/mapa_minas.rds")
+caminho_mapa <- file.path("dados_dash", "mapa_minas.rds")
+
+mapa_minas <- if (file.exists(caminho_mapa)) {
+  message("Carregando mapa_minas via RDS")
+  readRDS(caminho_mapa)
+} else {
+  message("RDS não encontrado — baixando via geobr")
+  geobr::read_municipality("MG")
+}
 
 if (is.null(mapa_minas)) {
-  stop("Falha ao carregar mapa_minas — read_municipality retornou NULL")
-} # Verifica se leu o mapa corretamente
-
-print(class(mapa_minas))
+  stop("Falha ao carregar mapa_minas")
+}
 
 mapa_minas <- mapa_minas |> 
   mutate(code_muni = as.numeric(substr(mapa_minas$code_muni, start = 1, stop = 6))) |>
