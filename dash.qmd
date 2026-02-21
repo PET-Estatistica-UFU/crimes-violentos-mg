@@ -379,7 +379,17 @@ media_crimes <- function(nome_municipio, categ = NULL, anoIntervalo = NULL, tipo
 }
 
 porc_alteracao_crimes <- function(nome_municipio, categ = NULL, anoIntervalo = NULL, tipo_crime = NULL) {
-  
+    
+# Verifica se o intervalo escolhido é o último ano e se há apenas dados do mês de janeiro. Se sim, adiciona-se o ano anterior para  calcular a variação mensal
+  if (
+    length(unique(anoIntervalo)) == 1 &&
+    anoIntervalo[1] == ano_maximo &&
+    all(dados_totais$mes[dados_totais$ano == ano_maximo] == 1)
+  ) {
+    anoIntervalo[1] <- ano_maximo - 1
+    cat(anoIntervalo[1])
+  }
+
   df <- filtra_dataframe(nome_municipio = nome_municipio, categ = categ, anoIntervalo = anoIntervalo, tipo_crime = tipo_crime)
   
   valores <- df |>
