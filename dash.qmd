@@ -876,7 +876,7 @@ A cidade é classificada de acordo com a população do último ano do intervalo
 
 Caso o intervalo de tempo escolhido seja de um ano, a opção de 'Dados mensais' será automaticamente selecionada e a escala do gráfico mudará de 'ano' para 'mês'.
 
-Os dados da população de 2023 são iguais ao da população de 2022.
+Os dados da população de 2023 são iguais ao da população de 2022. E os de 2026 são iguais ao da população de 2025.
 
 Dúvidas ou sugestões: petestatisticaufu@gmail.com
 :::
