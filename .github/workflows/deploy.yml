@@ -28,7 +28,7 @@ jobs:
 
         - name: Install required R packages
           run: |
-            Rscript -e 'install.packages(c("ggplot2", "geobr", "plotly", "stringr", "ragg", "httr", "rsconnect", "shiny", "quarto",
+            Rscript -e 'install.packages(c("ggplot2", "geobr", "plotly", "stringr", "ragg", "httr", "rsconnect", "shiny", "quarto", "rmarkdown",
                                            "cpp11", "systemfonts", "textshaping", "tidyr", "bslib"), repos="https://cran.r-project.org")'
     
 
