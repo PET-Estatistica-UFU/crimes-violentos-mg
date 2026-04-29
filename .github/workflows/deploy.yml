@@ -2,6 +2,10 @@ on:
   workflow_dispatch:
   
 name: Deploy Dash
+
+# force GitHub Actions to run JavaScript actions using Node.js 24
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   
 jobs:
   update-data:
