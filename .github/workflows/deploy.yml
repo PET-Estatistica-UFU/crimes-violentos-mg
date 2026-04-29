@@ -39,22 +39,26 @@ jobs:
             libgdal-dev \
             libgeos-dev 
 
-      # install main R packages
+      # install R packages with strict validation (fail fast if any package fails)
       - name: Install required R packages
         run: |
-          Rscript -e 'install.packages(c(
+          Rscript -e '
+          options(repos = c(CRAN = "https://packagemanager.posit.co/cran/latest"))
+          
+          pkgs <- c(
             "ggplot2", "geobr", "plotly", "stringr", "ragg", "httr",
             "rsconnect", "shiny", "quarto",
-            "cpp11", "systemfonts", "textshaping", "tidyr", "bslib"
-          ), repos="https://packagemanager.posit.co/cran/latest")'
+            "cpp11", "systemfonts", "textshaping", "tidyr", "bslib",
+            "rmarkdown"
+          )
 
-          # install rmarkdown separately to avoid silent failure
-          Rscript -e 'install.packages("rmarkdown", repos="https://packagemanager.posit.co/cran/latest")'
+          install.packages(pkgs)
 
-      # verify rmarkdown installation explicitly
-      - name: Check rmarkdown
-        run: |
-          Rscript -e 'if (!requireNamespace("rmarkdown", quietly = TRUE)) stop("rmarkdown not installed")'
+          missing <- pkgs[!sapply(pkgs, requireNamespace, quietly = TRUE)]
+          if (length(missing) > 0) {
+            stop("Packages not installed: ", paste(missing, collapse = ", "))
+          }
+          '
 
       # set up Quarto
       - name: Set up Quarto
