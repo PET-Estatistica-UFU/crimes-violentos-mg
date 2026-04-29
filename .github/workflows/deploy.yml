@@ -57,7 +57,7 @@ jobs:
             rsconnect
             shiny
             quarto
-            rmarkdown   # required for rendering .qmd files
+            rmarkdown
             cpp11
             systemfonts
             textshaping
