@@ -1,95 +1,63 @@
 on:
-  workflow_dispatch:
+    workflow_dispatch:
+  
   
 name: Deploy Dash
   
 jobs:
-  update-data:
-    runs-on: ubuntu-22.04  # evita problemas recentes do ubuntu-latest
+    updade-data:
+        runs-on: ubuntu-latest
+        permissions:
+        # Give the default GITHUB_TOKEN write permission to commit and push the
+        # added or changed files to the repository.
+            contents: write
+        steps:
+        # that installs R on the machine
+        - name: Set up R
+          uses: r-lib/actions/setup-r@v2
+          with:
+            # The R version to download (if necessary) and use.
+            r-version: '4.3.3'
+            # uses the RStudio Package Manager
+            use-public-rspm: true
 
-    permissions:
-      contents: write
+        - name: Install required system dependencies
+          run: |
+            sudo apt-get update -qq
+            sudo apt-get install -y libudunits2-dev libharfbuzz-dev libfribidi-dev libtiff5-dev libproj-dev libgdal-dev libgeos-dev 
 
-    steps:
-      # checkout do repositório
-      - name: Check out repository
-        uses: actions/checkout@v4
+        - name: Install required R packages
+          run: |
+            Rscript -e 'install.packages(c("ggplot2", "geobr", "plotly", "stringr", "ragg", "httr", "rsconnect", "shiny", "quarto", "rmarkdown",
+                                            "tidyr"), repos="https://cran.r-project.org")'
+    
 
-      # instala R
-      - name: Set up R
-        uses: r-lib/actions/setup-r@v2
-        with:
-          r-version: '4.3.3'
-          use-public-rspm: true
+        # to access the code inside our repository
+        - name: Check out repository
+          uses: actions/checkout@v4
 
-      # dependências do sistema (COMPLETO)
-      - name: Install required system dependencies
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y \
-            libudunits2-dev \
-            libharfbuzz-dev \
-            libfribidi-dev \
-            libtiff5-dev \
-            libproj-dev \
-            libgdal-dev \
-            libgeos-dev \
-            libfontconfig1-dev \
-            libfreetype6-dev \
-            libpng-dev \
-            libjpeg-dev \
-            libcurl4-openssl-dev \
-            libssl-dev \
-            libxml2-dev \
-            make \
-            g++ \
-            cmake
+        # exec script
+        - name: Set up Quarto
+          uses: quarto-dev/quarto-actions/setup@v2
 
-      # instalação robusta de pacotes R
-      - name: Install required R packages
-        run: |
-          Rscript -e '
-          options(repos = c(CRAN = "https://packagemanager.posit.co/cran/latest"))
-          
-          pkgs <- c(
-            "ggplot2", "geobr", "plotly", "stringr", "ragg", "httr",
-            "rsconnect", "shiny", "quarto",
-            "cpp11", "systemfonts", "textshaping", "tidyr", "bslib",
-            "rmarkdown"
-          )
+        - name: Render Quarto Project
+          run: quarto render dash.qmd
 
-          install.packages(pkgs)
+        # deploy
+        - name: deploy
+          run: Rscript -e 'source("deploy.R")'
+          env:
+            NAME: ${{ vars.NAME }}
+            TOKEN: ${{ secrets.TOKEN }}
+            SECRET: ${{ secrets.SECRET }}
 
-          missing <- pkgs[!sapply(pkgs, requireNamespace, quietly = TRUE)]
-          if (length(missing) > 0) {
-            stop("Packages not installed: ", paste(missing, collapse = ", "))
-          }
-          '
 
-      # instala Quarto
-      - name: Set up Quarto
-        uses: quarto-dev/quarto-actions/setup@v2
+        - name: Set current date as env variable
+          run: echo "NOW=$(date +'%Y-%m-%dT%H:%M:%S')" >> $GITHUB_ENV
+        - name: Echo current date
+          run: echo $NOW 
 
-      # renderiza
-      - name: Render Quarto Project
-        run: quarto render dash.qmd
-
-      # deploy
-      - name: deploy
-        run: Rscript -e 'source("deploy.R")'
-        env:
-          NAME: ${{ vars.NAME }}
-          TOKEN: ${{ secrets.TOKEN }}
-          SECRET: ${{ secrets.SECRET }}
-
-      # data
-      - name: Set current date as env variable
-        run: echo "NOW=$(date +'%Y-%m-%dT%H:%M:%S')" >> $GITHUB_ENV
-
-      - name: Echo current date
-        run: echo $NOW 
-
-      # commit automático
-      - uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: data updated ${{ env.NOW }}
+        # Commit all changed files back to the repository
+        - uses: stefanzweifel/git-auto-commit-action@v5
+          with:
+            commit_message: data updated ${{ env.NOW }}
