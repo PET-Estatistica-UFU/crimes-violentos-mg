@@ -19,7 +19,7 @@ jobs:
             # The R version to download (if necessary) and use.
             r-version: '4.3.3'
             # uses the RStudio Package Manager
-            use-public-rspm: true
+            use-public-rspm: false
 
         - name: Install required system dependencies
           run: |
@@ -29,18 +29,21 @@ jobs:
         - name: Install required R packages
           run: |
             Rscript -e '
-            options(repos = c(CRAN = "https://cran.r-project.org"))
+            options(repos = c(CRAN = "https://packagemanager.posit.co/cran/__linux__/jammy/latest"))
 
-            pkgs <- c(
-              "ggplot2", "geobr", "plotly", "stringr",
-              "ragg", "httr", "rsconnect", "shiny",
-              "quarto", "rmarkdown", "tidyr"
-            )
-
-            install.packages(pkgs)
-
-            # FAIL FAST (isso muda tudo)
-            missing <- pkgs[!sapply(pkgs, requireNamespace, quietly = TRUE)]
+            install.packages(c(
+              "ggplot2", "geobr", "plotly", "stringr", "ragg", "httr",
+              "rsconnect", "shiny", "quarto", "rmarkdown", "tidyr"
+            ))
+        
+            missing <- c(
+              "ggplot2", "geobr", "plotly", "stringr", "ragg", "httr",
+              "rsconnect", "shiny", "quarto", "rmarkdown", "tidyr"
+            )[!sapply(c(
+              "ggplot2", "geobr", "plotly", "stringr", "ragg", "httr",
+              "rsconnect", "shiny", "quarto", "rmarkdown", "tidyr"
+            ), requireNamespace, quietly = TRUE)]
+        
             if (length(missing) > 0) {
               stop("Packages not installed: ", paste(missing, collapse = ", "))
             }
