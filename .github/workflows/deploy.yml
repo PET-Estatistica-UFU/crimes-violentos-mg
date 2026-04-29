@@ -37,7 +37,11 @@ jobs:
             libtiff5-dev \
             libproj-dev \
             libgdal-dev \
-            libgeos-dev 
+            libgeos-dev \
+            libfontconfig1-dev \
+            libfreetype6-dev \
+            libpng-dev \
+            libjpeg-dev
 
       # install R packages with strict validation (fail fast if any package fails)
       - name: Install required R packages
