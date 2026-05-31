@@ -12,6 +12,7 @@ rsconnect::deployApp(
     "dash.html",
     "dados_dash/dados_populacao_completo.csv",
     "dados_dash/dados_totais_tratados.csv.gz",
+    "dados_dash/mapa_minas.rds",
     "dash_files"
   ),
   forceUpdate = TRUE
