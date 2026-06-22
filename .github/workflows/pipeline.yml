@@ -34,10 +34,7 @@ jobs:
           uses: actions/checkout@v4
 
         # exec script
-        - name: Webscraping
-          run: Rscript -e 'source("1-raspagem_api_ibge_populacao.R")'
-          
-        - name: Ppopulation Treatment
+        - name: Population Treatment
           run: Rscript -e 'source("2-tratamento_dados_populacao.R")'
 
         - name: Criminality Treatment
