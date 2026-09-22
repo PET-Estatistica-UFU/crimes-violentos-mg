@@ -32,15 +32,18 @@ jobs:
             options(repos = c(CRAN = "https://packagemanager.posit.co/cran/__linux__/jammy/latest"))
 
             install.packages(c(
-              "ggplot2", "geobr", "plotly", "stringr", "ragg", "httr",
-              "rsconnect", "shiny", "quarto", "rmarkdown", "tidyr"
+              "ggplot2", "plotly", "stringr", "ragg", "httr",
+              "rsconnect", "shiny", "quarto", "rmarkdown", "tidyr",
+              "remotes"
             ))
+
+            remotes::install_version("geobr", version = "1.9.1")
         
             missing <- c(
-              "ggplot2", "geobr", "plotly", "stringr", "ragg", "httr",
+              "ggplot2", "plotly", "stringr", "ragg", "httr",
               "rsconnect", "shiny", "quarto", "rmarkdown", "tidyr"
             )[!sapply(c(
-              "ggplot2", "geobr", "plotly", "stringr", "ragg", "httr",
+              "ggplot2", "plotly", "stringr", "ragg", "httr",
               "rsconnect", "shiny", "quarto", "rmarkdown", "tidyr"
             ), requireNamespace, quietly = TRUE)]
         
