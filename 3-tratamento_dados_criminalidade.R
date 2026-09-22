@@ -46,7 +46,9 @@ originais <- c(
   "SEQUESTRO E CARCERE PRIVADO CONSUMADO",
   "SEQUESTRO E CARCERE PRIVADO TENTADO",
   "FEMINICIDIO CONSUMADO (REGISTROS)",
-  "HOMICIDIO CONSUMADO (REGISTROS)"
+  "HOMICIDIO CONSUMADO (REGISTROS)",
+  "HOMICIDIO CONSUMADO (Registros)",
+  "FEMINICIDIO CONSUMADO"
 )
 
 # Valores corrigidos
@@ -65,7 +67,9 @@ corrigidos <- c(
   "Sequestro e Cárcere Privado Consumado",
   "Sequestro e Cárcere Privado Tentado",
   "Feminicídio Consumado (Registros)",
-  "Homicídio Consumado (Registros)"
+  "Homicídio Consumado (Registros)",
+  "Homicídio Consumado (Registros)",
+  "Feminicídio Consumado"
 )
 
 # Cria dicionário
