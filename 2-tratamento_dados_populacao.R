@@ -7,6 +7,7 @@ dados_populacao_antigo <- read.csv("dados_input/populacao-minas-ibge.csv")
 dados_populacao_novo <- read.csv("dados_input/ibge_populacao_municipio.csv")
 POP2024 <- read_excel("dados_input/POP2024.xlsx", sheet = "Página1")
 POP2025 <- read_excel("dados_input/POP2025.xlsx", sheet = "Página2")
+POP2026 <- read_excel("dados_input/POP2026.xlsx", sheet = "MG-2026")
 
 dados_populacao_novo <- dados_populacao_novo |>
   filter(sigla_uf == "MG") |>
@@ -35,9 +36,12 @@ dados_populacao_2025 <- POP2025 |>
          populacao = `POPULAÇÃO ESTIMADA`) |>
   select(localidade, ano, populacao)
 
-# Replica a população de 2025 em 2026, enquanto não sai a projeção para 2026
-dados_populacao_2026 <- dados_populacao_2025 |>
-  mutate(ano = 2026)
+dados_populacao_2026 <- POP2026 |>
+  mutate(ano = 2026,
+         localidade = paste0("31", `COD. MUNIC`)) |>
+  mutate(localidade = as.numeric(substr(localidade, start = 1, stop = 6)),
+         populacao = `POPULAÇÃO ESTIMADA`) |>
+  select(localidade, ano, populacao)
 
 
 dados_populacao_antigo <- bind_rows(dados_populacao_antigo, dados_populacao_2023, dados_populacao_2024, dados_populacao_2025, dados_populacao_2026)
