@@ -875,7 +875,7 @@ Fonte dos dados: [Sejusp](https://www.seguranca.mg.gov.br/index.php/transparenci
 
 Os dados são reportados mensalmente e se referem aos registros, e não à quantidade de vítimas.
 
-Os dados de feminicídio passaram a ser reportados separadamente de hominício a partir 2025.  
+Os dados de feminicídio passaram a ser reportados separadamente de hominício a partir 2025. Porém, em outubro de 2026, todos os dados de feminicídio voltaram a ser contabilizados na categoria de homicídio.
 
 São consideradas: 
 Cidades pequenas: menos de 100 mil hab.
