@@ -50,3 +50,16 @@ rsconnect/
 
 99-dashboard_criminalidade_mg_v5_files/
 99-dashboard_criminalidade_mg_v5_files.html
+
+# Python / Virtual Environment / Streamlit
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.streamlit/secrets.toml
+.env
+
