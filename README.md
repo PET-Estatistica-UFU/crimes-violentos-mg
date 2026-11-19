@@ -1,1 +1,135 @@
-# crimes-violentos-mg
+# Crimes Violentos em Minas Gerais
+
+Dashboard interativo para exploração, visualização e análise espacial/temporal dos registros de criminalidade violenta nos municípios de Minas Gerais (2012 em diante). O projeto integra dados oficiais da Secretaria de Estado de Justiça e Segurança Pública (SEJUSP-MG) e estimativas populacionais do IBGE.
+
+Construído em **Python** com **Streamlit**, utilizando **Pandas**, **Plotly**, **GeoPandas**, **Matplotlib** e **OpenPyXL**.
+
+---
+
+## 📋 Pré-requisitos
+
+Antes de iniciar, certifique-se de ter instalado em sua máquina:
+
+1. **[Python](https://www.python.org/downloads/)** (versão 3.12 recomendada).
+2. **pip** e suporte a ambientes virtuais (`venv`, incluído na instalação padrão do Python).
+
+---
+
+## 📦 Configuração do Ambiente Virtual e Instalação
+
+Crie e ative o ambiente virtual `.venv` na raiz do repositório e instale as dependências fixadas em `requirements.txt`:
+
+### Windows (PowerShell)
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+```
+
+### Linux / macOS (Bash)
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+---
+
+## 🚀 Como Rodar o Dashboard Localmente
+
+Como os dados pré-processados já estão incluídos na pasta `dados_dash/`, você pode executar o dashboard diretamente com o `.venv` ativado:
+
+```bash
+streamlit run app.py
+```
+
+O Streamlit abrirá o dashboard automaticamente no navegador padrão (geralmente em `http://localhost:8501`).
+
+Para encerrar o servidor, pressione `Ctrl + C` no terminal.
+
+---
+
+## 🔄 Pipeline de Atualização dos Dados (Opcional)
+
+Se você adicionou novos dados brutos em `dados_input/` ou deseja reexecutar o tratamento de ponta a ponta (com o `.venv` ativado):
+
+1. **(Opcional) Coleta de População via API do IBGE:**
+   ```bash
+   python 1-raspagem_api_ibge_populacao.py
+   ```
+   *Gera/atualiza `dados_input/populacao-minas-ibge.csv`.*
+
+2. **Tratamento das Séries Históricas de População:**
+   ```bash
+   python 2-tratamento_dados_populacao.py
+   ```
+   *Gera `dados_dash/dados_populacao_completo.csv`.*
+
+3. **Tratamento dos Dados de Criminalidade:**
+   ```bash
+   python 3-tratamento_dados_criminalidade.py
+   ```
+   *Lê os arquivos `dados_input/*cv*.csv`, padroniza categorias/naturezas e municípios e gera `dados_dash/dados_totais_tratados.csv.gz`.*
+
+4. **Download da Malha Municipal de MG (IBGE):**
+   ```bash
+   python 4-download_mapa_mg.py
+   ```
+   *Consulta a API de Malhas do IBGE e gera `dados_dash/mapa_minas.geojson` com código municipal de 6 dígitos.*
+
+Após rodar os scripts acima, inicie novamente o dashboard (`streamlit run app.py`).
+
+---
+
+## 📂 Estrutura do Repositório
+
+```text
+crimes-violentos-mg-python/
+├── .github/workflows/                 # Workflows do GitHub Actions (ETL e Validação)
+│   ├── deploy.yml                     # Validação dos dados e healthcheck do Streamlit
+│   └── pipeline.yml                   # Execução automatizada do pipeline Python
+├── .streamlit/
+│   └── config.toml                    # Tema visual do Streamlit alinhado à paleta do projeto
+├── dados_dash/                        # Dados tratados consumidos pelo dashboard
+│   ├── dados_populacao_completo.csv   # População por município e ano (2012–2026)
+│   ├── dados_totais_tratados.csv.gz   # Ocorrências de crimes tratadas e comprimidas
+│   └── mapa_minas.geojson             # Geometria dos 853 municípios de MG (API IBGE)
+├── dados_input/                       # Bases brutas (crimes e população)
+│   ├── cv-2012-2018.csv
+│   ├── cv-2019-2023.csv
+│   ├── cv-2024-2026.csv
+│   ├── ibge_populacao_municipio.csv
+│   ├── POP2024.xlsx / POP2025.xlsx / POP2026.xlsx
+│   └── populacao-minas-ibge.csv
+├── src/                               # Módulos auxiliares do dashboard
+│   ├── __init__.py
+│   ├── analytics.py                   # Regras de negócio, métricas, rankings e mapas
+│   ├── charts.py                      # Gráficos Plotly e mapa de localização GeoPandas
+│   └── data_loader.py                 # Leitura em cache e formatação pt-BR
+├── 1-raspagem_api_ibge_populacao.py   # Script de coleta via API do IBGE
+├── 2-tratamento_dados_populacao.py    # Script de consolidação demográfica
+├── 3-tratamento_dados_criminalidade.py # Script de ETL das naturezas criminais
+├── 4-download_mapa_mg.py              # Script de download do GeoJSON de MG
+├── app.py                             # Aplicação principal Streamlit
+├── requirements.txt                   # Dependências Python com versões fixadas
+└── README.md                          # Documentação do projeto
+```
+
+---
+
+## 🌐 Deploy e Automação
+
+- **Streamlit Community Cloud:** conecte este repositório apontando o arquivo principal para `app.py` (as dependências serão instaladas automaticamente a partir de `requirements.txt`).
+- **GitHub Actions:**
+  - `.github/workflows/pipeline.yml`: executa os scripts Python de tratamento (`2-tratamento_dados_populacao.py`, `3-tratamento_dados_criminalidade.py`, `4-download_mapa_mg.py`) e realiza commit dos dados atualizados.
+  - `.github/workflows/deploy.yml`: valida a carga dos arquivos em `dados_dash/` e verifica a inicialização do servidor Streamlit (`/_stcore/health`).
+
+---
+
+## 🛠️ Solução de Problemas Comuns
+
+- **Erro de política de execução no PowerShell ao ativar o `.venv`:** Execute `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass` antes de rodar `.\.venv\Scripts\Activate.ps1`.
+- **Erro de porta ocupada no Streamlit:** Caso a porta padrão `8501` esteja em uso, especifique outra porta com `streamlit run app.py --server.port 8502`.
+- **Ausência de `dados_dash/mapa_minas.geojson`:** Execute `python 4-download_mapa_mg.py` com acesso à internet para baixar novamente a malha municipal pela API do IBGE.

@@ -1,51 +1,41 @@
-on:
-    workflow_dispatch:
-  
-  
 name: Update data
-  
+
+on:
+  workflow_dispatch:
+
 jobs:
-    updade-data:
-        runs-on: ubuntu-latest
-        permissions:
-        # Give the default GITHUB_TOKEN write permission to commit and push the
-        # added or changed files to the repository.
-            contents: write
-        steps:
-        # that installs R on the machine
-        - name: Set up R
-          uses: r-lib/actions/setup-r@v2
-          with:
-            # The R version to download (if necessary) and use.
-            r-version: '4.3.3'
-            # uses the RStudio Package Manager
-            use-public-rspm: true
+  update-data:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
 
-        # Install packages
-        - name: Install packages
-          uses: r-lib/actions/setup-r-dependencies@v2
-          with:
-            packages: |
-                any::dplyr
-                any::httr
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
 
-        # to access the code inside our repository
-        - name: Check out repository
-          uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
-        # exec script
-        - name: Population Treatment
-          run: Rscript -e 'source("2-tratamento_dados_populacao.R")'
+      - name: Population Treatment
+        run: python 2-tratamento_dados_populacao.py
 
-        - name: Criminality Treatment
-          run: Rscript -e 'source("3-tratamento_dados_criminalidade.R")'
+      - name: Criminality Treatment
+        run: python 3-tratamento_dados_criminalidade.py
 
-        - name: Set current date as env variable
-          run: echo "NOW=$(date +'%Y-%m-%dT%H:%M:%S')" >> $GITHUB_ENV
-        - name: Echo current date
-          run: echo $NOW 
+      - name: Download MG GeoJSON Map
+        run: python 4-download_mapa_mg.py
 
-        # Commit all changed files back to the repository
-        - uses: stefanzweifel/git-auto-commit-action@v5
-          with:
-            commit_message: data updated ${{ env.NOW }}
+      - name: Set current date as env variable
+        run: echo "NOW=$(date +'%Y-%m-%dT%H:%M:%S')" >> $GITHUB_ENV
+
+      - name: Commit all changed files back to the repository
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: data updated ${{ env.NOW }}
